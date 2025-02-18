@@ -1,0 +1,23 @@
+def es_palindromo(n):
+    if n < 0:
+        return False  # Los números negativos no son palíndromos
+    
+    original = n
+    invertido = 0
+    
+    while n > 0:
+        digito = n % 10 
+        invertido = invertido * 10 + digito  
+        n //= 10 
+    
+    return original == invertido
+
+def verificar_palindromo():
+    numero = int(input("Ingrese un número: "))
+    if es_palindromo(numero):
+        print("El número es un palíndromo.")
+    else:
+        print("El número no es un palíndromo.")
+
+
+verificar_palindromo()
