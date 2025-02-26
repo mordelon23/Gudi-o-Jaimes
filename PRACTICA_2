@@ -1,0 +1,42 @@
+# Entrada: Dos enteros, dividend y divisor
+dividend = int(input("Ingrese el dividendo: "))
+divisor = int(input("Ingrese el divisor: "))
+
+# Manejo del caso especial en el que el divisor es 0 (no se puede dividir entre 0)
+if divisor == 0:
+    print("Error: División por cero no permitida.")
+else:
+    # Definir los límites de los enteros de 32 bits
+    INT_MAX = 2**31 - 1
+    INT_MIN = -2**31
+
+    # Determinar el signo del resultado
+    negative = (dividend < 0) ^ (divisor < 0)  # XOR para determinar si el resultado será negativo
+
+    # Convertir ambos valores a positivos para facilitar la resta repetitiva
+    dividend = abs(dividend)
+    divisor = abs(divisor)
+
+    # Realizar la división utilizando restas sucesivas
+    quotient = 0
+    while dividend >= divisor:
+        temp_divisor, multiple = divisor, 1
+        while dividend >= (temp_divisor << 1):  # Desplazamiento a la izquierda equivale a multiplicar por 2
+            temp_divisor <<= 1
+            multiple <<= 1
+        
+        dividend -= temp_divisor
+        quotient += multiple
+
+    # Aplicar el signo calculado previamente
+    if negative:
+        quotient = -quotient
+
+    # Manejo de desbordamiento
+    if quotient > INT_MAX:
+        quotient = INT_MAX
+    elif quotient < INT_MIN:
+        quotient = INT_MIN
+
+    # Imprimir el resultado
+    print("Cociente:", quotient)
