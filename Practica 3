@@ -1,0 +1,29 @@
+asociacion_numeros_letras = {
+    '2': ['a', 'b', 'c'],
+    '3': ['d', 'e', 'f'],
+    '4': ['g', 'h', 'i'],
+    '5': ['j', 'k', 'l'],
+    '6': ['m', 'n', 'o'],
+    '7': ['p', 'q', 'r', 's'],
+    '8': ['t', 'u', 'v'],
+    '9': ['w', 'x', 'y', 'z']
+}
+
+numeros = input("Introduce un número de dígitos (del 2 al 9): ")
+
+if not numeros or any(digito not in asociacion_numeros_letras for digito in numeros):
+    print("Solo se aceptan números del 2 al 9 :(")
+else:
+    combinaciones = [""]  
+
+    for digito in numeros:
+        letras = asociacion_numeros_letras[digito]  
+        nuevas_combinaciones = []
+
+        for combinacion in combinaciones:
+            for letra in letras:
+                nuevas_combinaciones.append(combinacion + letra)
+
+        combinaciones = nuevas_combinaciones  
+
+    print(combinaciones)
