@@ -1,0 +1,25 @@
+def team_chemistry(skill):
+    if len(skill) % 2 != 0: 
+        return -1
+
+    skill.sort()
+    
+    target_sum = skill[0] + skill[-1]
+    total_chemistry = 0
+    left, right = 0, len(skill) - 1
+
+    while left < right:
+        if skill[left] + skill[right] != target_sum:
+            return -1
+        
+        total_chemistry += skill[left] * skill[right]
+        
+        left += 1
+        right -= 1
+    
+    return total_chemistry
+
+# Ejemplo de prueba
+print(team_chemistry([3, 7, 2, 8, 5, 5]))  # Salida esperada: 22
+print(team_chemistry([1, 2, 3, 4, 5]))     # Salida esperada: -1 (impar)
+print(team_chemistry([1, 2, 3, 4, 5, 6, 7, 8])) # Salida esperada: 50
