@@ -1,0 +1,133 @@
+import numpy as np
+import math
+import time
+
+# ------------------ Funciones auxiliares ------------------
+def next_power_of_two(n):
+    return 1 if n == 0 else 2**math.ceil(math.log2(n))
+
+def pad_matrix(M, size):
+    rows, cols = len(M), len(M[0])
+    return [[M[i][j] if i < rows and j < cols else 0 for j in range(size)] for i in range(size)]
+
+def unpad_matrix(M, rows, cols):
+    return [row[:cols] for row in M[:rows]]
+
+# ------------------ Método Tradicional ------------------
+def tradicional(A, B):
+    n, m, p = len(A), len(B), len(B[0])
+    C = [[0] * p for _ in range(n)]
+    for i in range(n):
+        for j in range(p):
+            for k in range(m):
+                C[i][j] += A[i][k] * B[k][j]
+    return C
+
+# ------------------ Operaciones de matrices ------------------
+def add_matrix(A, B):
+    return [[A[i][j] + B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
+
+def sub_matrix(A, B):
+    return [[A[i][j] - B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
+
+def split_matrix(A):
+    n = len(A)
+    mid = n // 2
+    return (
+        [row[:mid] for row in A[:mid]],
+        [row[mid:] for row in A[:mid]],
+        [row[:mid] for row in A[mid:]],
+        [row[mid:] for row in A[mid:]]
+    )
+
+def combine_quadrants(C11, C12, C21, C22):
+    top = [c11 + c12 for c11, c12 in zip(C11, C12)]
+    bottom = [c21 + c22 for c21, c22 in zip(C21, C22)]
+    return top + bottom
+
+# ------------------ Método Divide y Vencerás ------------------
+def dac(A, B):
+    n = len(A)
+    if n == 1:
+        return [[A[0][0] * B[0][0]]]
+    A11, A12, A21, A22 = split_matrix(A)
+    B11, B12, B21, B22 = split_matrix(B)
+
+    C11 = add_matrix(dac(A11, B11), dac(A12, B21))
+    C12 = add_matrix(dac(A11, B12), dac(A12, B22))
+    C21 = add_matrix(dac(A21, B11), dac(A22, B21))
+    C22 = add_matrix(dac(A21, B12), dac(A22, B22))
+
+    return combine_quadrants(C11, C12, C21, C22)
+
+# ------------------ Método de Strassen ------------------
+def strassen(A, B):
+    n = len(A)
+    if n == 1:
+        return [[A[0][0] * B[0][0]]]
+    
+    A11, A12, A21, A22 = split_matrix(A)
+    B11, B12, B21, B22 = split_matrix(B)
+
+    M1 = strassen(add_matrix(A11, A22), add_matrix(B11, B22))
+    M2 = strassen(add_matrix(A21, A22), B11)
+    M3 = strassen(A11, sub_matrix(B12, B22))
+    M4 = strassen(A22, sub_matrix(B21, B11))
+    M5 = strassen(add_matrix(A11, A12), B22)
+    M6 = strassen(sub_matrix(A21, A11), add_matrix(B11, B12))
+    M7 = strassen(sub_matrix(A12, A22), add_matrix(B21, B22))
+
+    C11 = add_matrix(sub_matrix(add_matrix(M1, M4), M5), M7)
+    C12 = add_matrix(M3, M5)
+    C21 = add_matrix(M2, M4)
+    C22 = add_matrix(sub_matrix(add_matrix(M1, M3), M2), M6)
+
+    return combine_quadrants(C11, C12, C21, C22)
+
+# ------------------ Prueba del Programa ------------------
+def print_matrix(matrix, name="Matrix"):
+    print(f"{name}:")
+    for row in matrix:
+        print(row)
+    print()
+
+if __name__ == "__main__":
+    np.random.seed(1)
+    rows_A, cols_A = 3, 5
+    rows_B, cols_B = 5, 4
+
+    A = np.random.randint(1, 10, (rows_A, cols_A)).tolist()
+    B = np.random.randint(1, 10, (rows_B, cols_B)).tolist()
+
+    print_matrix(A, "Matriz A")
+    print_matrix(B, "Matriz B")
+
+    # Método tradicional
+    start = time.time()
+    C_trad = tradicional(A, B)
+    end = time.time()
+    print_matrix(C_trad, "Producto Tradicional")
+    print(f"Tiempo Tradicional: {end - start:.6f} segundos\n")
+
+    # Preparar para DaC y Strassen
+    n = max(rows_A, cols_A, cols_B)
+    s = next_power_of_two(n)
+
+    A_pad = pad_matrix(A, s)
+    B_pad = pad_matrix(B, s)
+
+    # Método Divide y Vencerás
+    start = time.time()
+    C_dac_full = dac(A_pad, B_pad)
+    end = time.time()
+    C_dac = unpad_matrix(C_dac_full, rows_A, cols_B)
+    print_matrix(C_dac, "Producto DaC")
+    print(f"Tiempo DaC: {end - start:.6f} segundos\n")
+
+    # Método Strassen
+    start = time.time()
+    C_strassen_full = strassen(A_pad, B_pad)
+    end = time.time()
+    C_strassen = unpad_matrix(C_strassen_full, rows_A, cols_B)
+    print_matrix(C_strassen, "Producto Strassen")
+    print(f"Tiempo Strassen: {end - start:.6f} segundos\n")
